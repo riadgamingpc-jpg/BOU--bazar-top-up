@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ST TOPUP</title>
+
+<style>
+body{font-family:Arial;background:#111;color:white;text-align:center;margin:0;}
+h1{color:#00ffd5;margin-top:20px;}
+.section{background:#222;margin:15px;padding:15px;border-radius:10px;}
+.packages{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.package{padding:12px;border-radius:8px;cursor:pointer;font-weight:bold;transition:0.3s;}
+.package:hover{transform:scale(1.05);}
+.package.selected{border:2px solid #00ffd5;}
+.diamond{background:#0044ff;}
+.evo{background:#ff4444;}
+.level{background:#22aa22;}
+input{padding:10px;border:none;border-radius:6px;margin:5px;width:80%;}
+button{padding:10px;border:none;background:#00ffd5;border-radius:6px;font-weight:bold;cursor:pointer;}
+.copy{background:red;color:white;}
+</style>
+</head>
+
+<body>
+
+<h1>💎 ST TOPUP</h1>
+
+<!-- Signup + Wallet -->
+<div class="section">
+<h3>📝 Gmail & Wallet</h3>
+
+<input type="email" id="email" placeholder="Gmail লিখুন">
+<input type="number" id="amount" placeholder="Amount টাকা">
+
+<br>
+<button onclick="signup()">Sign Up</button>
+<button onclick="addMoney()">➕ টাকা Add</button>
+
+<h3>💰 Balance: <span id="balance">0</span> TK</h3>
+
+<p id="msg"></p>
+</div>
+
+<!-- Diamond -->
+<div class="section">
+<h3>💎 Diamond</h3>
+<div class="packages" id="diamond">
+<div class="package diamond" data-name="25 Diamond" data-price="24">💎25<br>24 TK</div>
+<div class="package diamond" data-name="50 Diamond" data-price="41">💎50<br>41 TK</div>
+<div class="package diamond" data-name="115 Diamond" data-price="77">💎115<br>77 TK</div>
+<div class="package diamond" data-name="240 Diamond" data-price="152">💎240<br>152 TK</div>
+</div>
+<p>Selected: <span id="dname">None</span><br>Price: <span id="dprice">0</span></p>
+</div>
+
+<!-- Evo -->
+<div class="section">
+<h3>🔥 Evo Gun</h3>
+<div class="packages" id="evo">
+<div class="package evo" data-price="72" data-name="3 Days">3 Days<br>72 TK</div>
+<div class="package evo" data-price="87" data-name="7 Days">7 Days<br>87 TK</div>
+</div>
+<p>Selected: <span id="ename">None</span><br>Price: <span id="eprice">0</span></p>
+</div>
+
+<!-- Level -->
+<div class="section">
+<h3>🎟 Level Pack</h3>
+<div class="packages" id="level">
+<div class="package level" data-price="40" data-name="Level Up Pass">Level Up Pass<br>40 TK</div>
+<div class="package level" data-price="70" data-name="6 Level">6 Level<br>70 TK</div>
+</div>
+<p>Selected: <span id="lname">None</span><br>Price: <span id="lprice">0</span></p>
+</div>
+
+<!-- Payment -->
+<div class="section">
+<h3>💳 Payment (Bkash/Nagad)</h3>
+
+<p>📲 Send Money to:</p>
+<b>01575693872</b><br><br>
+
+<button class="copy" onclick="copyNum()">Copy</button>
+
+<p>💡 Payment করে Transaction ID দিন</p>
+
+<input type="text" id="txn" placeholder="Transaction ID">
+</div>
+
+<script>
+let balance = parseInt(localStorage.getItem("balance")) || 0;
+updateBalance();
+
+let dname="",dprice=0;
+let ename="",eprice=0;
+let lname="",lprice=0;
+
+let lastClickTime = 0;
+
+// signup
+function signup(){
+let email=document.getElementById("email").value;
+if(!email.endsWith("@gmail.com")){
+alert("Gmail দিন ❗");
+return;
+}
+document.getElementById("msg").innerHTML="✅ "+email;
+}
+
+// add money
+function addMoney(){
+let amt=parseInt(document.getElementById("amount").value);
+if(!amt || amt<=0){alert("Amount দিন");return;}
+balance+=amt;
+localStorage.setItem("balance",balance);
+updateBalance();
+alert("টাকা যোগ হয়েছে ✅");
+}
+
+// update balance
+function updateBalance(){
+document.getElementById("balance").innerText=balance;
+}
+
+// select pack
+function selectPack(section,nameId,priceId){
+let now = Date.now();
+if(now - lastClickTime < 1000){
+return; // double click block
+}
+lastClickTime = now;
+
+document.querySelectorAll(section+" .package").forEach(p=>p.classList.remove("selected"));
+event.target.classList.add("selected");
+
+let name=event.target.dataset.name;
+let price=parseInt(event.target.dataset.price);
+
+// balance check
+if(balance < price){
+alert("❌ Balance কম");
+return;
+}
+
+// cut money
+balance -= price;
+localStorage.setItem("balance",balance);
+updateBalance();
+
+// show
+document.getElementById(nameId).innerText=name;
+document.getElementById(priceId).innerText=price;
+
+// save
+if(section=="#diamond"){dname=name;dprice=price;}
+if(section=="#evo"){ename=name;eprice=price;}
+if(section=="#level"){lname=name;lprice=price;}
+
+send();
+}
+
+// attach click
+document.querySelectorAll("#diamond .package").forEach(p=>p.onclick=()=>selectPack("#diamond","dname","dprice"));
+document.querySelectorAll("#evo .package").forEach(p=>p.onclick=()=>selectPack("#evo","ename","eprice"));
+document.querySelectorAll("#level .package").forEach(p=>p.onclick=()=>selectPack("#level","lname","lprice"));
+
+// copy
+function copyNum(){
+navigator.clipboard.writeText("01575693872");
+alert("নাম্বার কপি হয়েছে");
+}
+
+// whatsapp
+function send(){
+let email=document.getElementById("email").value;
+let txn=document.getElementById("txn").value;
+
+if(!email || !txn){return;}
+
+let msg=`🔥 ST TOPUP ORDER 🔥
+Email: ${email}
+
+💎 Diamond: ${dname} (${dprice})
+🔥 Evo: ${ename} (${eprice})
+🎟 Level: ${lname} (${lprice})
+
+💰 Payment: 01575693872
+Txn: ${txn}`;
+
+let url="https://wa.me/8801575693872?text="+encodeURIComponent(msg);
+window.open(url,"_blank");
+}
+</script>
+
+</body>
+</html>
